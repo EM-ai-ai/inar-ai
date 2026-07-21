@@ -6,7 +6,7 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 .hero-grid:after,.download-blueprint:after,.login-grid:after{background-image:url('/site/assets/inar-hospital-blueprint.png')}
 
-/* Refinements v0.1.6 */
+/* Refinements v0.1.7 */
 .svg-sprite{position:absolute;width:0;height:0;overflow:hidden}
 .ui-icon,.download-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .text-link{display:inline-flex;align-items:center;gap:9px}.text-link .ui-icon{width:16px;height:16px;color:#aebaff;transition:transform .25s}.text-link:hover .ui-icon{transform:translate(3px,3px)}

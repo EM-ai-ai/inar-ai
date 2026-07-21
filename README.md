@@ -1,12 +1,12 @@
 # InAR AI
 
-Applicazione desktop e portale di distribuzione riservati a InAR, versione **v0.1.6**.
+Applicazione desktop e portale di distribuzione riservati a InAR, versione **v0.1.7**.
 
 - Sito protetto: [inar-ai.vercel.app](https://inar-ai.vercel.app)
 - Repository: [EM-ai-ai/inar-ai](https://github.com/EM-ai-ai/inar-ai)
-- Release: [v0.1.6](https://github.com/EM-ai-ai/inar-ai/releases/tag/v0.1.6)
+- Release: [v0.1.7](https://github.com/EM-ai-ai/inar-ai/releases/tag/v0.1.7)
 
-All'apertura l'app mostra il loader personalizzato InAR e carica direttamente la chat aziendale. L'interfaccia mantiene il sistema di mascheramento della versione sorgente v0.1.6 per evitare flash o schermate tecniche durante il caricamento.
+All'apertura l'app mostra il loader personalizzato InAR e carica direttamente la chat aziendale. L'interfaccia mantiene il sistema di mascheramento della versione sorgente v0.1.7 per evitare flash o schermate tecniche durante il caricamento.
 
 ## Struttura
 
@@ -20,7 +20,7 @@ La versione generalista originale rimane separata e non viene modificata.
 ## Stato
 
 - Nome applicazione: **InAR AI**
-- Versione: **0.1.6**
+- Versione: **0.1.7**
 - Destinazione iniziale: chat InAR
 - Logo e icona: logo ufficiale InAR
 - Repository e release: `EM-ai-ai/inar-ai`
