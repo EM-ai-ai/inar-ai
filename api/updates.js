@@ -1,10 +1,12 @@
-const ownerFallback = "EM-ai-ai";
-const repoFallback = "inar-ai";
-
 module.exports = async function handler(request, response) {
   try {
-    const owner = process.env.PUBLIC_RELEASE_OWNER || ownerFallback;
-    const repo = process.env.PUBLIC_RELEASE_REPO || repoFallback;
+    const owner = process.env.GITHUB_RELEASE_OWNER;
+    const repo = process.env.GITHUB_RELEASE_REPO;
+    if (!owner || !repo) {
+      response.statusCode = 503;
+      response.end("Canale aggiornamenti temporaneamente non configurato.");
+      return;
+    }
     const requestedFile = getRequestedFile(request) || "latest.yml";
     const release = await fetchLatestRelease(owner, repo);
     const asset = findAsset(release.assets || [], requestedFile);

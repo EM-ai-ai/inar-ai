@@ -5,6 +5,6 @@
   "description": "Applicazione desktop e portale di distribuzione InAR AI.",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check api/site.js && node --check api/login.js && node --check api/logout.js && node --check api/updates.js && node --check lib/access.js && node --check site/site.js"
+    "check": "node --check api/site.js && node --check api/login.js && node --check api/logout.js && node --check api/download.js && node --check api/updates.js && node --check lib/access.js && node --check site/site.js"
   }
 }
