@@ -1,0 +1,57 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "functions": {
+    "api/site.js": {
+      "includeFiles": [
+        "site/index.html",
+        "site/login.html"
+      ]
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/api/site"
+    },
+    {
+      "source": "/site",
+      "destination": "/api/site"
+    },
+    {
+      "source": "/site/",
+      "destination": "/api/site"
+    },
+    {
+      "source": "/site/index.html",
+      "destination": "/api/site"
+    },
+    {
+      "source": "/site/login.html",
+      "destination": "/api/site"
+    },
+    {
+      "source": "/api/updates/(.*)",
+      "destination": "/api/updates?file=$1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    }
+  ]
+}

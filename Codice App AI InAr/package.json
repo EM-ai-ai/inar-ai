@@ -1,0 +1,84 @@
+{
+  "name": "inar-ai",
+  "productName": "InAR AI",
+  "version": "0.1.6",
+  "private": true,
+  "author": "EM",
+  "description": "Assistente AI desktop riservato a InAR.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": ".\\node_modules\\electron\\dist\\electron.exe .",
+    "start:kiosk": ".\\node_modules\\electron\\dist\\electron.exe . --kiosk",
+    "pack": "node ./node_modules/electron-builder/cli.js --dir",
+    "build:win": "node ./node_modules/electron-builder/cli.js --win nsis portable --x64",
+    "build:mac": "node ./node_modules/electron-builder/cli.js --mac dmg zip --x64 --arm64",
+    "release:win": "npm run build:win",
+    "release:mac": "npm run build:mac"
+  },
+  "build": {
+    "appId": "it.em.inar-ai",
+    "productName": "InAR AI",
+    "copyright": "Copyright © 2026 EM",
+    "asar": true,
+    "compression": "maximum",
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "removePackageScripts": true,
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "InAR AI"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}",
+      "category": "public.app-category.business",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "dmg": {
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://inar-ai.vercel.app/api/updates"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@electron/fuses": "^2.1.3",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}

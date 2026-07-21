@@ -1,0 +1,11 @@
+.vercel/
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+out/
+**/out/
+*.log
+.DS_Store
+Thumbs.db
+output/playwright/

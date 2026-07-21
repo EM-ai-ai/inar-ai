@@ -1,0 +1,10 @@
+{
+  "name": "inar-ai-monorepo",
+  "version": "0.1.6",
+  "private": true,
+  "description": "Applicazione desktop e portale di distribuzione InAR AI.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check api/site.js && node --check api/login.js && node --check api/logout.js && node --check api/updates.js && node --check lib/access.js && node --check site/site.js"
+  }
+}

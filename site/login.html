@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#05070b">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Accesso riservato — InAR AI</title>
+  <link rel="icon" href="/site/assets/inar-app-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/site/styles.css">
+</head>
+<body class="login-page">
+  <div class="noise" aria-hidden="true"></div><div class="login-grid" aria-hidden="true"></div>
+  <main class="login-shell">
+    <section class="login-brand">
+      <img src="/site/assets/inar-logo-full.webp" alt="InAR Ingegneria Architettura">
+      <div><p class="section-kicker">Piattaforma dedicata</p><h1>La conoscenza InAR,<br><em>in un unico spazio.</em></h1><p>Consulta progetti, capitolati, materiali e procedure attraverso un dialogo semplice e immediato.</p></div>
+      <div class="login-trace"><span></span><span></span><span></span></div>
+    </section>
+    <section class="login-card">
+      <div class="secure-badge"><svg viewBox="0 0 24 24"><path d="M12 2.5 20 6v5.5c0 5.2-3.4 8.4-8 10-4.6-1.6-8-4.8-8-10V6l8-3.5Z"/><path d="m8.7 12.1 2.1 2.1 4.7-5"/></svg><span>Area protetta</span></div>
+      <img class="login-app-icon" src="/site/assets/inar-app-logo.png" alt="">
+      <h2>Benvenuto in InAR AI</h2><p>Inserisci la password riservata per accedere.</p>
+      <form action="/api/login" method="post">
+        <label for="password">Password</label>
+        <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" required autofocus><button type="button" class="toggle-password" aria-label="Mostra password">Mostra</button></div>
+        <p class="login-error" role="alert" hidden>Password non corretta. Riprova.</p>
+        <button class="button login-submit" type="submit">Accedi all’area InAR <span>→</span></button>
+      </form>
+      <small>Accesso riservato esclusivamente agli utenti autorizzati.</small>
+    </section>
+  </main>
+  <script src="/site/site.js" defer></script>
+</body>
+</html>

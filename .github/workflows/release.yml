@@ -1,0 +1,72 @@
+name: Build InAR AI release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest
+          - macos-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CSC_IDENTITY_AUTO_DISCOVERY: false
+
+    defaults:
+      run:
+        working-directory: Codice App AI InAr
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Codice App AI InAr/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run: npm run build:win
+
+      - name: Build macOS
+        if: runner.os == 'macOS'
+        run: npm run build:mac
+
+      - name: Create release if missing
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        working-directory: .
+        run: |
+          gh release view "${{ github.ref_name }}" 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create "${{ github.ref_name }}" --title "InAR AI ${{ github.ref_name }}" --notes "Release desktop InAR AI."
+          }
+
+      - name: Upload release assets
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        working-directory: .
+        run: |
+          $assets = Get-ChildItem -Path "Codice App AI InAr/dist" -File | Where-Object {
+            ($_.Extension -in ".exe", ".dmg", ".zip", ".blockmap") -or ($_.Name -in "latest.yml", "latest-mac.yml")
+          }
+          gh release upload "${{ github.ref_name }}" @($assets.FullName) --clobber
