@@ -13,6 +13,14 @@
   <link rel="stylesheet" href="/site/styles.css">
 </head>
 <body class="site-page">
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="icon-arrow-down" viewBox="0 0 24 24"><path d="M12 4v15M6.5 13.5 12 19l5.5-5.5"/></symbol>
+    <symbol id="icon-arrow-right" viewBox="0 0 24 24"><path d="M4 12h15M13.5 6.5 19 12l-5.5 5.5"/></symbol>
+    <symbol id="icon-arrow-diagonal" viewBox="0 0 24 24"><path d="M7 7h10v10M17 7 7 17"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12.5 4.2 4.2L19 7"/></symbol>
+    <symbol id="icon-windows" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M3 5.2 10.5 4v7.3H3V5.2Zm8.5-1.35L21 2.5v8.8h-9.5V3.85ZM3 12.3h7.5v7.3L3 18.55V12.3Zm8.5 0H21v8.9l-9.5-1.35V12.3Z"/></symbol>
+    <symbol id="icon-apple" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M16.7 12.9c0-2.3 1.9-3.4 2-3.5a4.3 4.3 0 0 0-3.4-1.8c-1.4-.2-2.8.9-3.5.9-.8 0-1.9-.9-3.1-.9-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.2 1.2 9.5.8 1.1 1.7 2.4 3 2.3 1.2 0 1.6-.7 3.1-.7 1.4 0 1.9.7 3.1.7 1.3 0 2.1-1.1 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.7-1-2.7-3.9ZM14.4 6.1c.6-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3Z"/></symbol>
+  </svg>
   <div class="noise" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="#inizio" aria-label="InAR AI, torna all'inizio">
@@ -36,8 +44,8 @@
         <h1>La conoscenza dello studio,<br><em>pronta al dialogo.</em></h1>
         <p>Progetti, capitolati, materiali e procedure diventano risposte chiare, verificabili e immediatamente utili al lavoro.</p>
         <div class="hero-actions">
-          <a class="button" href="#download">Scarica InAR AI <span>↓</span></a>
-          <a class="text-link" href="#esempi">Scopri cosa puoi chiedere <span>↘</span></a>
+          <a class="button" href="#download">Scarica InAR AI <svg class="ui-icon"><use href="#icon-arrow-down"/></svg></a>
+          <a class="text-link" href="#esempi">Scopri cosa puoi chiedere <svg class="ui-icon"><use href="#icon-arrow-diagonal"/></svg></a>
         </div>
         <div class="trust-row">
           <div class="trust-mark" aria-hidden="true">
@@ -61,12 +69,12 @@
               <div class="question">Quali requisiti ricorrono nei progetti ospedalieri?</div>
               <div class="answer"><span></span><span></span><span></span><span class="short"></span></div>
               <div class="citation"><i>6</i> fonti consultate</div>
-              <div class="prompt"><span>Fai una domanda…</span><b>→</b></div>
+              <div class="prompt"><span>Fai una domanda…</span><b><svg class="ui-icon"><use href="#icon-arrow-right"/></svg></b></div>
             </div>
           </div>
         </div>
-        <div class="floating-tag tag-one">Risposte con fonti <span>✓</span></div>
-        <div class="floating-tag tag-two">Disponibile in più lingue <span>↗</span></div>
+        <div class="floating-tag tag-one">Risposte con fonti <span><svg class="ui-icon"><use href="#icon-check"/></svg></span></div>
+        <div class="floating-tag tag-two">Disponibile in più lingue <span><svg class="ui-icon"><use href="#icon-arrow-diagonal"/></svg></span></div>
       </div>
     </section>
 
@@ -99,7 +107,7 @@
         </article>
         <article class="feature feature-wide reveal">
           <div class="feature-copy"><div class="feature-number">04</div><h3>Verificare ogni risposta</h3><p>Le citazioni permettono di risalire ai passaggi utilizzati, approfondire il contesto e controllare subito le informazioni.</p></div>
-          <div class="source-card" aria-hidden="true"><div class="source-top"><span>Fonte 04</span><b>↗</b></div><p>“La larghezza minima prevista per…”</p><div class="source-highlight"></div></div>
+          <div class="source-card" aria-hidden="true"><div class="source-top"><span>Fonte 04</span><b><svg class="ui-icon"><use href="#icon-arrow-diagonal"/></svg></b></div><p>“La larghezza minima prevista per…”</p><div class="source-highlight"></div></div>
         </article>
       </div>
     </section>
@@ -135,7 +143,7 @@
         <article class="reveal"><span>02</span><div><h3>Obiettivo</h3><p>Spiega cosa vuoi trovare, verificare, riassumere o confrontare.</p></div></article>
         <article class="reveal"><span>03</span><div><h3>Formato</h3><p>Chiedi una tabella, una checklist, una sintesi o una risposta dettagliata.</p></div></article>
       </div>
-      <div class="formula reveal"><span class="formula-label">ESEMPIO</span><p><b>Per il progetto ospedaliero,</b> confronta i requisiti delle aree di degenza <b>e presentali in una tabella</b> con fonte e pagina.</p><button type="button" class="copy-example" aria-label="Copia l'esempio">Copia</button></div>
+      <div class="formula reveal"><span class="formula-label">ESEMPIO</span><p><b>Per il Nuovo Polo Ospedaliero Pediatrico Santobono,</b> confronta i requisiti delle aree di degenza <b>e presentali in una tabella</b> con fonte e pagina.</p><button type="button" class="copy-example" aria-label="Copia l'esempio">Copia</button></div>
     </section>
 
     <section class="languages">
@@ -148,14 +156,14 @@
       <div class="download-copy reveal"><img src="/site/assets/inar-app-logo.png" alt=""><p class="section-kicker">InAR AI · v0.1.6</p><h2>La conoscenza InAR,<br>sempre a portata di mano.</h2><p>Scegli il tuo sistema operativo e installa l’applicazione.</p></div>
       <div class="download-options reveal delay-1">
         <a class="download-card" href="https://github.com/EM-ai-ai/inar-ai/releases/latest/download/InAR.AI-Setup-0.1.6-x64.exe">
-          <div class="os-icon windows"><i></i><i></i><i></i><i></i></div>
-          <div><strong>Scarica per Windows</strong><span>Windows 10 e 11 · 64 bit</span></div><b>↓</b>
+          <div class="os-icon"><svg class="brand-icon"><use href="#icon-windows"/></svg></div>
+          <div><strong>Scarica per Windows</strong><span>Windows 10 e 11 · 64 bit</span></div><b><svg class="download-icon"><use href="#icon-arrow-down"/></svg></b>
         </a>
         <a class="download-card" href="https://github.com/EM-ai-ai/inar-ai/releases/latest/download/InAR.AI-0.1.6-mac-arm64.dmg">
-          <div class="os-icon apple">●</div><div><strong>Scarica per Mac</strong><span>Apple Silicon · M1 e successivi</span></div><b>↓</b>
+          <div class="os-icon"><svg class="brand-icon apple-icon"><use href="#icon-apple"/></svg></div><div><strong>Scarica per Mac</strong><span>Apple Silicon · M1 e successivi</span></div><b><svg class="download-icon"><use href="#icon-arrow-down"/></svg></b>
         </a>
         <a class="download-card secondary" href="https://github.com/EM-ai-ai/inar-ai/releases/latest/download/InAR.AI-0.1.6-mac-x64.dmg">
-          <div class="os-icon apple">●</div><div><strong>Mac con processore Intel</strong><span>Versione x64</span></div><b>↓</b>
+          <div class="os-icon"><svg class="brand-icon apple-icon"><use href="#icon-apple"/></svg></div><div><strong>Mac con processore Intel</strong><span>Versione x64</span></div><b><svg class="download-icon"><use href="#icon-arrow-down"/></svg></b>
         </a>
         <p class="release-note">I file di installazione vengono distribuiti direttamente dall’archivio ufficiale delle versioni.</p>
       </div>

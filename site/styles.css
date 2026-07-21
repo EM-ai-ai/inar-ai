@@ -5,3 +5,26 @@
 @media(max-width:650px){.topbar{height:68px;padding:0 18px}.button-small{padding:0 14px}.hero{min-height:auto;padding:120px 20px 70px}.hero h1{font-size:49px}.hero-copy>p{font-size:17px}.hero-actions{align-items:flex-start;flex-direction:column}.trust-row{margin-top:45px}.hero-visual{min-height:390px}.app-window{transform:none}.app-body{grid-template-columns:25% 75%}.app-body aside{padding:15px 9px}.app-body aside img{height:38px}.chat-preview{padding:25px 18px}.question{margin-top:20px;padding:13px;font-size:10px}.prompt{left:18px;right:18px;bottom:15px}.floating-tag{font-size:10px}.tag-one{left:-5px;top:45px}.tag-two{right:-5px;bottom:35px}.statement,.capabilities,.examples,.method{padding:85px 20px}.statement{min-height:520px}.section-heading{grid-template-columns:1fr;gap:20px}.bento-grid{grid-template-columns:1fr}.feature-large,.feature-wide{grid-column:auto;min-height:520px}.feature-wide{display:flex}.feature-wide .source-card{margin-top:35px}.prompt-tabs{overflow-x:auto}.prompt-carousel{padding:38px 24px;min-height:370px}.example-strip>span{display:none}.method-steps article{grid-template-columns:45px 1fr}.formula{padding:30px 24px 90px}.copy-example{top:auto;bottom:25px;right:25px;transform:none}.languages,.download{padding:85px 20px}.language-copy{order:-1}.site-page footer{align-items:flex-start;flex-direction:column;gap:15px}.site-page footer a{margin-left:0}.login-card{padding:32px 24px}.login-app-icon{margin-top:35px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 .hero-grid:after,.download-blueprint:after,.login-grid:after{background-image:url('/site/assets/inar-hospital-blueprint.png')}
+
+/* Refinements v0.1.6 */
+.svg-sprite{position:absolute;width:0;height:0;overflow:hidden}
+.ui-icon,.download-icon{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.text-link{display:inline-flex;align-items:center;gap:9px}.text-link .ui-icon{width:16px;height:16px;color:#aebaff;transition:transform .25s}.text-link:hover .ui-icon{transform:translate(3px,3px)}
+.hero{min-height:min(860px,100vh);padding-top:122px;padding-bottom:66px;grid-template-columns:minmax(420px,.9fr) minmax(600px,1.1fr);gap:5vw}
+.hero h1{font-size:clamp(52px,4.6vw,76px);line-height:1;margin:24px 0 24px}
+.hero-copy>p{font-size:18px;line-height:1.55}
+.hero-actions{margin-top:32px}.trust-row{margin-top:42px}
+.eyebrow span{width:22px;height:1px;border-radius:0;background:linear-gradient(90deg,#7890ff,#c2ccff);box-shadow:0 0 12px rgba(126,147,255,.5)}
+.hero-visual{min-height:540px}
+.app-body aside img{width:100%;height:72px;object-fit:contain;object-position:left center}
+.tag-one{left:auto;right:-12px;top:92px}.tag-two{right:-12px;bottom:56px}
+.floating-tag span{display:inline-grid;place-items:center;vertical-align:middle}.floating-tag .ui-icon{width:15px;height:15px}
+.prompt b .ui-icon{width:15px;height:15px}.source-top b{display:grid;place-items:center}.source-top .ui-icon{width:15px;height:15px}
+.method-intro{position:static;top:auto}
+.formula p{font-size:clamp(19px,1.8vw,28px)}
+.os-icon{position:relative;width:48px;height:48px;border:1px solid rgba(151,166,255,.22);border-radius:14px;background:linear-gradient(145deg,rgba(122,143,255,.16),rgba(255,255,255,.025));color:#bdc8ff;box-shadow:inset 0 1px rgba(255,255,255,.08),0 10px 30px rgba(0,0,0,.18)}
+.brand-icon{width:25px;height:25px}.apple-icon{width:27px;height:27px}
+.download-icon{width:23px;height:23px;transition:transform .25s}.download-card:hover .download-icon{transform:translateY(4px)}
+.download-card>b{display:grid;place-items:center}
+@media(max-width:1050px){.hero{min-height:auto;grid-template-columns:1fr;padding-top:130px}.hero h1{font-size:clamp(52px,8vw,76px)}.tag-one{right:0}.tag-two{right:0}}
+@media(max-width:650px){.hero{padding-top:110px;padding-bottom:65px}.hero h1{font-size:47px}.hero-copy>p{font-size:16px}.hero-actions{margin-top:28px}.trust-row{margin-top:36px}.hero-visual{min-height:390px}.tag-one{right:-4px;top:45px}.tag-two{right:-4px;bottom:32px}.formula p{font-size:19px}.os-icon{width:44px;height:44px}.brand-icon{width:23px;height:23px}}
