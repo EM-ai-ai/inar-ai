@@ -27,4 +27,4 @@ Il sito e l'applicazione condividono il repository `EM-ai-ai/inar-ai`. Il sito v
 
 La pubblicazione di un tag `v*` avvia la creazione automatica degli installer Windows e macOS. L'app controlla gli aggiornamenti tramite `/api/updates`, che legge la release più recente senza trasferire gli installer attraverso Vercel.
 
-Le variabili richieste dal sito sono `SITE_PASSWORD` e `AUTH_SECRET`; non devono essere salvate nel repository.
+Le variabili richieste sono `SITE_PASSWORD`, `AUTH_SECRET`, `GITHUB_RELEASE_OWNER` e `GITHUB_RELEASE_REPO`; i loro valori non devono essere salvati nel repository.
