@@ -3,10 +3,7 @@
   "cleanUrls": true,
   "functions": {
     "api/site.js": {
-      "includeFiles": [
-        "site/index.html",
-        "site/login.html"
-      ]
+      "includeFiles": "site/*.html"
     }
   },
   "rewrites": [
