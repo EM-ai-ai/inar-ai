@@ -55,6 +55,11 @@ JSON.stringify({
   shellMounted: Boolean(document.getElementById('demo-ai-shell')),
   blueprintMounted: Boolean(document.querySelector('.demo-blueprint-image')),
   protectedBadge: document.querySelector('.demo-protected-badge') ? document.querySelector('.demo-protected-badge').textContent.trim() : '',
+  notebookButtons: Array.from(document.querySelectorAll('.demo-notebook-button')).map((button) => ({
+    key: button.dataset.notebookKey,
+    label: button.querySelector('strong')?.textContent.trim() || '',
+    active: button.classList.contains('is-active')
+  })),
   preloadError: window.__demoPreloadError || ''
 })
 "@
@@ -101,6 +106,8 @@ $result = [PSCustomObject]@{
   ShellInAR = $verification.shellMounted
   BannerOspedale = $verification.blueprintMounted
   AreaProtetta = $verification.protectedBadge
+  AreeNotebook = ($verification.notebookButtons | ForEach-Object { $_.label }) -join ", "
+  AreaAttiva = ($verification.notebookButtons | Where-Object { $_.active } | Select-Object -First 1).label
   ErrorePreload = $verification.preloadError
   FinestraAperta = [bool]$window
   Risponde = $window.Responding
@@ -111,6 +118,8 @@ if (
   -not $verification.shellMounted -or
   -not $verification.blueprintMounted -or
   $verification.protectedBadge -ne "Area protetta" -or
+  $verification.notebookButtons.Count -ne 3 -or
+  @($verification.notebookButtons | Where-Object { $_.active }).Count -ne 1 -or
   $verification.preloadError
 ) {
   throw "Verifica overlay InAR non superata."

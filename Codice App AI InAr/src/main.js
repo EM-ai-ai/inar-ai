@@ -2,11 +2,10 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { app, BrowserWindow, ipcMain, shell, session } = require("electron");
 const { autoUpdater } = require("electron-updater");
-const { isSourceUrl, makeSourceUrl, sourceHosts } = require("./source-config");
+const { defaultNotebookKey, notebookUrls } = require("./notebook-config");
+const { isSourceUrl, sourceHosts } = require("./source-config");
 
-const demoUrls = {
-  architect: makeSourceUrl("d5a915b1-64ae-4668-9fc4-fe62c4bfa56a")
-};
+const demoUrls = notebookUrls;
 const appTitle = "InAR AI";
 const inarLogoPath = path.join(__dirname, "..", "assets", "inar-logo-full.webp");
 const iconPath = path.join(__dirname, "..", "assets", "inar-app-logo.png");
@@ -68,8 +67,8 @@ const curtainClients = {
     ]
   },
   architect: {
-    label: "InAR AI",
-    context: "Assistente riservato a InAR",
+    label: "InAR - Progetti",
+    context: "Progetti, capitolati e documentazione tecnica",
     initials: "IN",
     logo: curtainLogos.architect,
     logoShape: "horizontal",
@@ -81,6 +80,38 @@ const curtainClients = {
       "Organizzazione documentazione tecnica",
       "Verifica del contesto di studio",
       "Configurazione assistente InAR"
+    ]
+  },
+  dip: {
+    label: "InAR AI - DIP",
+    context: "Documentazione DIP e relativo contesto operativo",
+    initials: "DI",
+    logo: curtainLogos.architect,
+    logoShape: "horizontal",
+    accent: "#38bdf8",
+    accentSoft: "rgba(56, 189, 248, 0.2)",
+    steps: [
+      "Preparazione archivio DIP",
+      "Allineamento documentazione dedicata",
+      "Organizzazione requisiti e riferimenti",
+      "Verifica del contesto operativo",
+      "Configurazione assistente DIP"
+    ]
+  },
+  gare: {
+    label: "InAR - Gare",
+    context: "Bandi, requisiti e materiali di gara",
+    initials: "GA",
+    logo: curtainLogos.architect,
+    logoShape: "horizontal",
+    accent: "#f59e0b",
+    accentSoft: "rgba(245, 158, 11, 0.2)",
+    steps: [
+      "Preparazione archivio gare",
+      "Allineamento bandi e requisiti",
+      "Organizzazione materiali di partecipazione",
+      "Verifica del contesto di gara",
+      "Configurazione assistente gare"
     ]
   },
   legal: {
@@ -131,7 +162,7 @@ function isAllowedNavigation(rawUrl) {
 
 function createWindow() {
   const kiosk = process.argv.includes("--kiosk");
-  let activeDemoKey = "architect";
+  let activeDemoKey = defaultNotebookKey;
   let nativeCurtain = null;
   let nativeCurtainHideTimer = null;
   let nativeCurtainFailsafeTimer = null;
@@ -278,7 +309,7 @@ function createWindow() {
     if (input.control && input.shift && input.key.toLowerCase() === "l" && input.type === "keyDown") {
       event.preventDefault();
       await session.fromPartition(sessionPartition).clearStorageData();
-      loadDemoUrl("architect");
+      loadDemoUrl(defaultNotebookKey);
     }
   });
 
@@ -456,7 +487,7 @@ function createWindow() {
     return app.getVersion();
   });
 
-  loadDemoUrl("architect");
+  loadDemoUrl(defaultNotebookKey);
 
   setTimeout(() => {
     checkForUpdates({ silent: true }).catch(() => {});
@@ -492,7 +523,7 @@ function createAssetDataUrl(assetPath, mimeType) {
 }
 
 function getCurtainClient(demoKey) {
-  const client = curtainClients[demoKey] || curtainClients.architect;
+  const client = curtainClients[demoKey] || curtainClients[defaultNotebookKey];
   return {
     ...client,
     steps: client.steps || defaultCurtainSteps
@@ -508,7 +539,7 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function createNativeCurtainHtml(demoKey = "architect") {
+function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
   const client = getCurtainClient(demoKey);
   const logoShape = client.logoShape || "compact";
   const logoSizeClass = demoKey === "chemical" ? "is-chemical-logo" : "";

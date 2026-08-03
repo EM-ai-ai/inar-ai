@@ -1,6 +1,7 @@
 ﻿const { ipcRenderer } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
+const { defaultNotebookKey, notebookByKey, notebooks } = require("./notebook-config");
 const { isSourceLocation } = require("./source-config");
 
 const inarLogoPath = path.join(__dirname, "..", "assets", "inar-logo-full.webp");
@@ -497,29 +498,174 @@ const css = `
     font-weight: 680;
   }
 
-  .demo-chat-context {
-    border: 1px solid rgba(255, 255, 255, 0.095);
-    border-radius: 9px;
-    padding: 14px;
+  .demo-notebook-section {
     display: grid;
-    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .demo-notebook-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .demo-notebook-heading .demo-section-label {
+    margin: 0;
+  }
+
+  .demo-notebook-heading span {
+    color: #596173;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .demo-notebook-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .demo-notebook-button {
+    position: relative;
+    width: 100%;
+    min-height: 76px;
+    border: 1px solid rgba(255, 255, 255, 0.085);
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
     align-items: center;
-    background: rgba(255, 255, 255, 0.05);
+    gap: 12px;
+    padding: 12px;
+    overflow: hidden;
+    color: #d9deea;
+    background:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018)),
+      rgba(7, 9, 14, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
 
-  .demo-chat-context strong {
-    display: block;
+  .demo-notebook-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    background: radial-gradient(circle at 12% 50%, rgba(79, 141, 255, 0.2), transparent 52%);
+    transition: opacity 180ms ease;
+    pointer-events: none;
+  }
+
+  .demo-notebook-button:hover {
+    transform: translateX(4px);
+    border-color: rgba(125, 164, 255, 0.32);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+  }
+
+  .demo-notebook-button:hover::before,
+  .demo-notebook-button.is-active::before {
+    opacity: 1;
+  }
+
+  .demo-notebook-button.is-active {
+    border-color: rgba(99, 145, 255, 0.48);
     color: #fff;
-    font-size: 14px;
-    line-height: 1.25;
+    background:
+      linear-gradient(135deg, rgba(47, 123, 255, 0.18), rgba(47, 123, 255, 0.035)),
+      rgba(8, 11, 18, 0.96);
+    box-shadow:
+      inset 3px 0 0 #4f8dff,
+      inset 0 1px 0 rgba(255, 255, 255, 0.055),
+      0 14px 40px rgba(13, 45, 112, 0.18);
   }
 
-  .demo-chat-context span {
+  .demo-notebook-icon,
+  .demo-notebook-copy,
+  .demo-notebook-state {
+    position: relative;
+    z-index: 1;
+  }
+
+  .demo-notebook-icon {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(113, 155, 255, 0.25);
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    color: #dce7ff;
+    background: linear-gradient(145deg, rgba(57, 117, 255, 0.28), rgba(25, 43, 84, 0.32));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 20px rgba(0, 0, 0, 0.24);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+  }
+
+  .demo-notebook-button.is-dip .demo-notebook-icon {
+    border-color: rgba(56, 189, 248, 0.28);
+    color: #d8f5ff;
+    background: linear-gradient(145deg, rgba(14, 165, 233, 0.3), rgba(15, 67, 96, 0.34));
+  }
+
+  .demo-notebook-button.is-gare .demo-notebook-icon {
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #fff1ce;
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.3), rgba(91, 58, 10, 0.34));
+  }
+
+  .demo-notebook-copy {
+    min-width: 0;
+  }
+
+  .demo-notebook-copy strong,
+  .demo-notebook-copy span {
     display: block;
-    margin-top: 4px;
-    color: #8f95a3;
+  }
+
+  .demo-notebook-copy strong {
+    overflow: hidden;
+    color: currentColor;
+    font-size: 13px;
+    font-weight: 760;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-notebook-copy span {
+    margin-top: 5px;
+    overflow: hidden;
+    color: #7f8797;
     font-size: 10px;
-    line-height: 1.3;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-notebook-state {
+    min-width: 18px;
+    color: #687185;
+    font-size: 17px;
+    text-align: right;
+    transition: color 180ms ease, transform 180ms ease;
+  }
+
+  .demo-notebook-button:hover .demo-notebook-state {
+    color: #b9cdfd;
+    transform: translateX(2px);
+  }
+
+  .demo-notebook-button.is-active .demo-notebook-state {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    border-radius: 50%;
+    background: #66a0ff;
+    box-shadow: 0 0 14px rgba(79, 141, 255, 0.9);
+    color: transparent;
   }
 
   #demo-card-mask {
@@ -1155,17 +1301,15 @@ const icon = {
 
 const moduleContent = {};
 
-const demoInfo = {
-  architect: {
-    label: "InAR AI",
-    code: "IN",
+const demoInfo = Object.fromEntries(notebooks.map((notebook) => [
+  notebook.key,
+  {
+    ...notebook,
     logoUrl: inarLogoUrl,
     logoAlt: "INAR",
-    className: "is-architect",
-    title: "Assistente AI InAR",
-    description: "Consulta progetti, capitolati, materiali, procedure interne e documentazione tecnica."
+    className: "is-architect"
   }
-};
+]));
 
 function mountOverlay() {
   try {
@@ -1207,7 +1351,7 @@ function ensureInitialState() {
 
   sessionStorage.setItem("demo-window-initialized", "1");
   sessionStorage.setItem("demo-active-view", "Chat");
-  sessionStorage.setItem("demo-active-client", "architect");
+  sessionStorage.setItem("demo-active-client", defaultNotebookKey);
 }
 
 function createTopMask() {
@@ -1427,7 +1571,7 @@ function createSidebar() {
   if (activeView === "Chat") {
     return createNode("div", { className: "demo-sidebar" }, [
       brand,
-      createChatContext(activeClient)
+      createNotebookSwitcher(activeClient)
     ]);
   }
 
@@ -1471,17 +1615,6 @@ function createBackButton() {
   });
 
   return button;
-}
-
-function createChatContext(activeClient) {
-  const info = demoInfo[activeClient] || demoInfo.architect;
-
-  return createNode("section", { className: "demo-chat-context" }, [
-    createNode("div", {}, [
-      createNode("strong", { text: info.label }),
-      createNode("span", { text: "Assistente InAR attivo" })
-    ])
-  ]);
 }
 
 function createNavButton(label, iconMarkup, active = false) {
@@ -1546,7 +1679,7 @@ function createClientMark(info, colorClass) {
 
 function createHeroCard() {
   const activeClient = getActiveClient();
-  const info = demoInfo[activeClient] || demoInfo.architect;
+  const info = demoInfo[activeClient] || demoInfo[defaultNotebookKey];
   const visual = createNode("img", { className: "demo-blueprint-image", src: blueprintUrl, alt: "" });
 
   return createNode("div", { id: "demo-card-mask" }, [
@@ -1707,8 +1840,48 @@ function getActiveView() {
   return sessionStorage.getItem("demo-active-view") || "Chat";
 }
 
+function createNotebookSwitcher(activeClient) {
+  return createNode("section", { className: "demo-notebook-section" }, [
+    createNode("div", { className: "demo-notebook-heading" }, [
+      createNode("div", { className: "demo-section-label", text: "Aree InAR" }),
+      createNode("span", { text: "Cambia archivio" })
+    ]),
+    createNode("div", { className: "demo-notebook-list" }, notebooks.map((notebook) => (
+      createNotebookButton(notebook, notebook.key === activeClient)
+    )))
+  ]);
+}
+
+function createNotebookButton(notebook, active = false) {
+  const button = createNode("button", {
+    className: `demo-notebook-button is-${notebook.key}${active ? " is-active" : ""}`
+  }, [
+    createNode("span", { className: "demo-notebook-icon", text: notebook.code }),
+    createNode("span", { className: "demo-notebook-copy" }, [
+      createNode("strong", { text: notebook.label }),
+      createNode("span", { text: notebook.shortLabel })
+    ]),
+    createNode("span", { className: "demo-notebook-state", text: "›" })
+  ]);
+
+  button.type = "button";
+  button.dataset.notebookKey = notebook.key;
+  button.setAttribute("aria-pressed", active ? "true" : "false");
+  button.addEventListener("click", () => {
+    if (!notebookByKey[notebook.key] || notebook.key === getActiveClient()) return;
+
+    sessionStorage.setItem("demo-active-view", "Chat");
+    sessionStorage.setItem("demo-active-client", notebook.key);
+    ipcRenderer.send("demo-open", notebook.key);
+    rebuildShell();
+  });
+
+  return button;
+}
+
 function getActiveClient() {
-  return sessionStorage.getItem("demo-active-client") || "architect";
+  const activeClient = sessionStorage.getItem("demo-active-client");
+  return notebookByKey[activeClient] ? activeClient : defaultNotebookKey;
 }
 
 function updateSourceLayoutVars() {
@@ -1809,7 +1982,14 @@ function keepOverlayMounted() {
   window.addEventListener("resize", scheduleSourceLayoutUpdate);
 }
 
-ipcRenderer.on("demo-force-overlay", () => {
+ipcRenderer.on("demo-force-overlay", (event, demoKey) => {
+  if (notebookByKey[demoKey]) {
+    sessionStorage.setItem("demo-active-view", "Chat");
+    sessionStorage.setItem("demo-active-client", demoKey);
+  }
+
+  const shell = document.getElementById("demo-ai-shell");
+  if (shell) shell.remove();
   mountOverlay();
   updateSourceLayoutVars();
 });
