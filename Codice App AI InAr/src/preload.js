@@ -1,8 +1,8 @@
 ﻿const { ipcRenderer } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
+const { isSourceLocation } = require("./source-config");
 
-const sourceHost = ["note", "booklm.google.com"].join("");
 const inarLogoPath = path.join(__dirname, "..", "assets", "inar-logo-full.webp");
 const inarLogoUrl = `data:image/webp;base64,${fs.readFileSync(inarLogoPath).toString("base64")}`;
 const blueprintPath = path.join(__dirname, "..", "assets", "inar-hospital-blueprint.png");
@@ -1169,7 +1169,7 @@ const demoInfo = {
 
 function mountOverlay() {
   try {
-    if (window.location.hostname !== sourceHost) return;
+    if (!isSourceLocation(window.location)) return;
     if (!document.documentElement) return;
     if (document.getElementById("demo-ai-shell")) return;
     ensureInitialState();

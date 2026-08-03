@@ -1,6 +1,6 @@
 {
   "name": "inar-ai-monorepo",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "Applicazione desktop e portale di distribuzione InAR AI.",
   "scripts": {

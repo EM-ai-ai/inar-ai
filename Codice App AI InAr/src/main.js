@@ -2,10 +2,8 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { app, BrowserWindow, ipcMain, shell, session } = require("electron");
 const { autoUpdater } = require("electron-updater");
+const { isSourceUrl, makeSourceUrl, sourceHosts } = require("./source-config");
 
-const sourceHost = ["note", "booklm.google.com"].join("");
-const sourcePath = ["/note", "book/"].join("");
-const makeSourceUrl = (id) => `https://${sourceHost}${sourcePath}${id}`;
 const demoUrls = {
   architect: makeSourceUrl("d5a915b1-64ae-4668-9fc4-fe62c4bfa56a")
 };
@@ -19,7 +17,7 @@ const nativeCurtainBeforeLoadMs = 90;
 const nativeCurtainAfterOverlayMs = 1100;
 const nativeCurtainFailsafeMs = 9000;
 const allowedHosts = new Set([
-  sourceHost,
+  ...sourceHosts,
   "accounts.google.com",
   "myaccount.google.com",
   "ogs.google.com",
@@ -125,7 +123,7 @@ const curtainClients = {
 function isAllowedNavigation(rawUrl) {
   try {
     const url = new URL(rawUrl);
-    return url.protocol === "https:" && allowedHosts.has(url.hostname);
+    return url.protocol === "https:" && (allowedHosts.has(url.hostname) || isSourceUrl(rawUrl));
   } catch {
     return false;
   }

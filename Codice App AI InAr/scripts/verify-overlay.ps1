@@ -1,27 +1,47 @@
+param(
+  [string]$UserDataDir = "",
+  [string]$ExecutablePath = ""
+)
+
 $ErrorActionPreference = "Stop"
 
 $codeRoot = Split-Path -Parent $PSScriptRoot
 $electron = Join-Path $codeRoot "node_modules\electron\dist\electron.exe"
+$appExecutable = if ($ExecutablePath) { $ExecutablePath } else { $electron }
 
 node --check (Join-Path $codeRoot "src\preload.js")
 if ($LASTEXITCODE -ne 0) {
   throw "Controllo sintassi preload non superato."
 }
 
-Get-Process electron -ErrorAction SilentlyContinue |
-  Where-Object { $_.MainWindowTitle -eq "InAR AI" } |
+Get-Process -ErrorAction SilentlyContinue |
+  Where-Object {
+    $_.ProcessName -eq "InAR AI" -or
+    ($_.ProcessName -eq "electron" -and $_.MainWindowTitle -eq "InAR AI")
+  } |
   Stop-Process
 
 Start-Sleep -Seconds 3
-Start-Process -FilePath $electron `
-  -ArgumentList @("--remote-debugging-port=9223", "--remote-allow-origins=*", ".") `
+$electronArguments = @("--remote-debugging-port=9223", "--remote-allow-origins=*")
+if ($UserDataDir) {
+  $electronArguments += "--user-data-dir=`"$UserDataDir`""
+}
+if (-not $ExecutablePath) {
+  $electronArguments += "."
+}
+
+Start-Process -FilePath $appExecutable `
+  -ArgumentList $electronArguments `
   -WorkingDirectory $codeRoot | Out-Null
 Start-Sleep -Seconds 10
 
 $targets = Invoke-RestMethod -Uri "http://127.0.0.1:9223/json"
-$target = $targets | Where-Object { $_.type -eq "page" } | Select-Object -First 1
+$target = $targets | Where-Object {
+  $_.type -eq "page" -and $_.url -match '^https://[^/]+/notebook/[^/]+'
+} | Select-Object -First 1
 if (-not $target) {
-  throw "Target di verifica non trovato."
+  $loadedUrls = ($targets | Where-Object { $_.type -eq "page" } | ForEach-Object { $_.url }) -join "`n"
+  throw "Notebook non caricato. URL aperti:`n$loadedUrls"
 }
 
 $socket = [System.Net.WebSockets.ClientWebSocket]::new()
@@ -70,8 +90,11 @@ while (-not $verification) {
 }
 
 $socket.Dispose()
-$window = Get-Process electron -ErrorAction SilentlyContinue |
-  Where-Object { $_.MainWindowTitle -eq "InAR AI" } |
+$window = Get-Process -ErrorAction SilentlyContinue |
+  Where-Object {
+    $_.MainWindowTitle -eq "InAR AI" -and
+    $_.ProcessName -in @("electron", "InAR AI")
+  } |
   Select-Object -First 1
 
 $result = [PSCustomObject]@{
