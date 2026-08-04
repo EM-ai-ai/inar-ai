@@ -43,11 +43,8 @@ test("normalizza e trova gli asset delle release", () => {
 test("seleziona l'installer corretto senza esporre il nome nel sito", () => {
   const assets = [
     { name: "InAR.AI-Setup-0.1.7-x64.exe", browser_download_url: "windows" },
-    { name: "InAR.AI-Setup-0.1.7-x64.exe.blockmap", browser_download_url: "blockmap" },
-    { name: "InAR.AI-0.1.7-mac-arm64.dmg", browser_download_url: "arm" },
-    { name: "InAR.AI-0.1.7-mac-x64.dmg", browser_download_url: "intel" }
+    { name: "InAR.AI-Setup-0.1.7-x64.exe.blockmap", browser_download_url: "blockmap" }
   ];
   assert.equal(selectAsset(assets, "windows").browser_download_url, "windows");
-  assert.equal(selectAsset(assets, "mac-arm64").browser_download_url, "arm");
-  assert.equal(selectAsset(assets, "mac-x64").browser_download_url, "intel");
+  assert.equal(selectAsset(assets, "unsupported"), undefined);
 });

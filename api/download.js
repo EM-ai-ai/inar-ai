@@ -1,4 +1,4 @@
-const supportedPlatforms = new Set(["windows", "mac-arm64", "mac-x64"]);
+const supportedPlatforms = new Set(["windows"]);
 
 module.exports = async function handler(request, response) {
   if (request.method !== "GET" && request.method !== "HEAD") {
@@ -46,12 +46,6 @@ function selectAsset(assets, platform) {
   const candidates = assets.filter((asset) => !asset.name.endsWith(".blockmap"));
   if (platform === "windows") {
     return candidates.find((asset) => /setup-.*-x64\.exe$/i.test(asset.name));
-  }
-  if (platform === "mac-arm64") {
-    return candidates.find((asset) => /mac-arm64\.dmg$/i.test(asset.name));
-  }
-  if (platform === "mac-x64") {
-    return candidates.find((asset) => /mac-x64\.dmg$/i.test(asset.name));
   }
   return undefined;
 }

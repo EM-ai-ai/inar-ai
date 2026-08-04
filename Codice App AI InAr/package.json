@@ -1,7 +1,7 @@
 {
   "name": "inar-ai",
   "productName": "InAR AI",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "author": "EM",
   "description": "Assistente AI desktop riservato a InAR.",
@@ -11,9 +11,7 @@
     "start:kiosk": ".\\node_modules\\electron\\dist\\electron.exe . --kiosk",
     "pack": "node ./node_modules/electron-builder/cli.js --dir",
     "build:win": "node ./node_modules/electron-builder/cli.js --win nsis portable --x64",
-    "build:mac": "node ./node_modules/electron-builder/cli.js --mac dmg zip --x64 --arm64",
-    "release:win": "npm run build:win",
-    "release:mac": "npm run build:mac"
+    "release:win": "npm run build:win"
   },
   "build": {
     "appId": "it.em.inar-ai",
@@ -51,20 +49,6 @@
     },
     "portable": {
       "artifactName": "${productName}-Portable-${version}-${arch}.${ext}"
-    },
-    "mac": {
-      "icon": "build/icon.png",
-      "target": [
-        "dmg",
-        "zip"
-      ],
-      "artifactName": "${productName}-${version}-mac-${arch}.${ext}",
-      "category": "public.app-category.business",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false
-    },
-    "dmg": {
-      "artifactName": "${productName}-${version}-mac-${arch}.${ext}"
     },
     "publish": [
       {

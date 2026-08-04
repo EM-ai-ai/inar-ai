@@ -39,6 +39,18 @@ document.querySelectorAll('[data-prompt-group]').forEach((button, index) => {
   });
 });
 
+const guideStage = document.querySelector('.guide-stage');
+document.querySelectorAll('[data-guide-step]').forEach((button) => {
+  button.addEventListener('click', () => {
+    if (!guideStage) return;
+    const selectedTime = Number(button.dataset.guideStep) * -4;
+    guideStage.classList.add('is-guide-resetting');
+    guideStage.style.setProperty('--guide-cycle-delay', `${selectedTime}s`);
+    void guideStage.offsetWidth;
+    guideStage.classList.remove('is-guide-resetting');
+  });
+});
+
 const copyButton = document.querySelector('.copy-example');
 if (copyButton) {
   copyButton.addEventListener('click', async () => {
@@ -60,6 +72,16 @@ if (card && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   });
   card.closest('.hero-visual').addEventListener('pointerleave', () => {
     card.style.transform = 'rotateY(-5deg) rotateX(2deg)';
+  });
+}
+
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('[data-archive-card]').forEach((archiveCard) => {
+    archiveCard.addEventListener('pointermove', (event) => {
+      const rect = archiveCard.getBoundingClientRect();
+      archiveCard.style.setProperty('--pointer-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+      archiveCard.style.setProperty('--pointer-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+    });
   });
 }
 

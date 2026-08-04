@@ -955,7 +955,7 @@ function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
 
     window.setInterval(() => {
       index = (index + 1) % steps.length;
-      value = value >= 96 ? 71 : value + Math.floor(Math.random() * 7) + 3;
+      value = Math.min(99, value + Math.floor(Math.random() * 7) + 3);
       message.classList.add("is-changing");
       window.setTimeout(() => {
         message.textContent = steps[index];
