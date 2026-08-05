@@ -2,7 +2,11 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { defaultNotebookKey, notebookByKey, notebooks } = require("./notebook-config");
+const { hasRequiredOverlay } = require("./overlay-guard");
 const { isSourceLocation } = require("./source-config");
+
+let pendingOverlayAttemptId = null;
+let confirmedOverlayAttemptId = null;
 
 const inarLogoPath = path.join(__dirname, "..", "assets", "inar-logo-full.webp");
 const inarLogoUrl = `data:image/webp;base64,${fs.readFileSync(inarLogoPath).toString("base64")}`;
@@ -1315,7 +1319,10 @@ function mountOverlay() {
   try {
     if (!isSourceLocation(window.location)) return;
     if (!document.documentElement) return;
-    if (document.getElementById("demo-ai-shell")) return;
+    if (document.getElementById("demo-ai-shell")) {
+      notifyOverlayReady();
+      return;
+    }
     ensureInitialState();
 
     if (!document.getElementById("demo-ai-style")) {
@@ -1341,9 +1348,19 @@ function mountOverlay() {
     document.documentElement.appendChild(shell);
     restoreUpdateOverlayIfNeeded(shell);
     updateSourceLayoutVars();
+    notifyOverlayReady();
   } catch (error) {
     window.__demoPreloadError = `${error?.name || "Error"}: ${error?.message || error}`;
   }
+}
+
+function notifyOverlayReady() {
+  if (!Number.isInteger(pendingOverlayAttemptId)) return;
+  if (confirmedOverlayAttemptId === pendingOverlayAttemptId) return;
+  if (!hasRequiredOverlay((id) => document.getElementById(id))) return;
+
+  confirmedOverlayAttemptId = pendingOverlayAttemptId;
+  ipcRenderer.send("demo-overlay-ready", { attemptId: pendingOverlayAttemptId });
 }
 
 function ensureInitialState() {
@@ -1982,16 +1999,22 @@ function keepOverlayMounted() {
   window.addEventListener("resize", scheduleSourceLayoutUpdate);
 }
 
-ipcRenderer.on("demo-force-overlay", (event, demoKey) => {
+ipcRenderer.on("demo-force-overlay", (event, payload) => {
+  const demoKey = typeof payload === "string" ? payload : payload?.demoKey;
+  const attemptId = typeof payload === "object" ? payload?.attemptId : null;
+
+  if (Number.isInteger(attemptId)) {
+    pendingOverlayAttemptId = attemptId;
+  }
+
   if (notebookByKey[demoKey]) {
     sessionStorage.setItem("demo-active-view", "Chat");
     sessionStorage.setItem("demo-active-client", demoKey);
   }
 
-  const shell = document.getElementById("demo-ai-shell");
-  if (shell) shell.remove();
   mountOverlay();
   updateSourceLayoutVars();
+  notifyOverlayReady();
 });
 
 if (document.readyState === "loading") {

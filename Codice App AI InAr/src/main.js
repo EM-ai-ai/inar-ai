@@ -14,7 +14,8 @@ const sessionPartition = "persist:inar-ai";
 const nativeCurtainEnabled = true;
 const nativeCurtainBeforeLoadMs = 90;
 const nativeCurtainAfterOverlayMs = 1100;
-const nativeCurtainFailsafeMs = 9000;
+const nativeCurtainGuardTimeoutMs = 12000;
+const curtainRetryUrl = "inar-ai://retry";
 const allowedHosts = new Set([
   ...sourceHosts,
   "accounts.google.com",
@@ -166,6 +167,7 @@ function createWindow() {
   let nativeCurtain = null;
   let nativeCurtainHideTimer = null;
   let nativeCurtainFailsafeTimer = null;
+  let activeLoadAttemptId = 0;
   const win = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -228,6 +230,15 @@ function createWindow() {
     nativeCurtain.setAlwaysOnTop(true, "screen-saver");
     syncNativeCurtainBounds();
 
+    nativeCurtain.webContents.on("will-navigate", (event, url) => {
+      if (url !== curtainRetryUrl) return;
+
+      event.preventDefault();
+      loadDemoUrl(activeDemoKey);
+    });
+
+    nativeCurtain.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+
     nativeCurtain.on("closed", () => {
       nativeCurtain = null;
     });
@@ -235,7 +246,7 @@ function createWindow() {
     return nativeCurtain;
   };
 
-  const showNativeCurtain = (demoKey) => {
+  const showNativeCurtain = (demoKey, { state = "loading" } = {}) => {
     if (!nativeCurtainEnabled) return;
 
     const curtain = createNativeCurtain();
@@ -244,12 +255,18 @@ function createWindow() {
     windowClearTimeout(nativeCurtainHideTimer);
     windowClearTimeout(nativeCurtainFailsafeTimer);
     syncNativeCurtainBounds();
-    curtain.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(createNativeCurtainHtml(demoKey))}`);
+    curtain.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(createNativeCurtainHtml(demoKey, { state }))}`);
     curtain.showInactive();
 
-    nativeCurtainFailsafeTimer = setTimeout(() => {
-      hideNativeCurtain();
-    }, nativeCurtainFailsafeMs);
+    if (state === "loading") {
+      nativeCurtainFailsafeTimer = setTimeout(() => {
+        showNativeCurtain(demoKey, { state: "error" });
+      }, nativeCurtainGuardTimeoutMs);
+    }
+  };
+
+  const showNativeCurtainError = () => {
+    showNativeCurtain(activeDemoKey, { state: "error" });
   };
 
   const hideNativeCurtain = () => {
@@ -277,6 +294,7 @@ function createWindow() {
     if (!nextUrl) return;
 
     activeDemoKey = demoKey;
+    activeLoadAttemptId += 1;
 
     if (!nativeCurtainEnabled || !useCurtain) {
       win.loadURL(nextUrl);
@@ -319,16 +337,40 @@ function createWindow() {
   });
 
   const forceOverlay = () => {
-    if (!win.webContents.isDestroyed()) {
-      win.webContents.send("demo-force-overlay", activeDemoKey);
+    if (win.webContents.isDestroyed()) return;
+
+    const currentUrl = win.webContents.getURL();
+    if (isSourceUrl(currentUrl)) {
+      win.webContents.send("demo-force-overlay", {
+        demoKey: activeDemoKey,
+        attemptId: activeLoadAttemptId
+      });
+      return;
     }
-    scheduleNativeCurtainHide();
+
+    if (isAllowedNavigation(currentUrl)) {
+      hideNativeCurtain();
+    }
   };
 
+  win.webContents.on("did-start-navigation", (event, url, isInPlace, isMainFrame) => {
+    if (!isMainFrame || isInPlace || !isSourceUrl(url)) return;
+
+    activeLoadAttemptId += 1;
+    showNativeCurtain(activeDemoKey);
+  });
   win.webContents.on("dom-ready", forceOverlay);
   win.webContents.on("did-finish-load", forceOverlay);
-  win.webContents.on("did-fail-load", () => {
-    scheduleNativeCurtainHide(1600);
+  win.webContents.on("did-fail-load", (event, errorCode, errorDescription, validatedUrl, isMainFrame) => {
+    if (!isMainFrame || errorCode === -3) return;
+    showNativeCurtainError();
+  });
+  win.webContents.on("ipc-message", (event, channel, payload) => {
+    if (channel !== "demo-overlay-ready") return;
+    if (payload?.attemptId !== activeLoadAttemptId) return;
+    if (!isSourceUrl(win.webContents.getURL())) return;
+
+    scheduleNativeCurtainHide();
   });
 
   win.on("move", syncNativeCurtainBounds);
@@ -539,14 +581,35 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
+function createNativeCurtainHtml(demoKey = defaultNotebookKey, { state = "loading" } = {}) {
   const client = getCurtainClient(demoKey);
+  const isError = state === "error";
   const logoShape = client.logoShape || "compact";
   const logoSizeClass = demoKey === "chemical" ? "is-chemical-logo" : "";
   const clientLogo = client.logo
     ? `<img class="client-logo ${logoSizeClass}" src="${client.logo}" alt="${escapeHtml(client.label)}">`
     : `<div class="client-initials">${escapeHtml(client.initials || "AI")}</div>`;
   const stepsJson = JSON.stringify(client.steps);
+  const centerContent = isError
+    ? `<div class="error-symbol" aria-hidden="true">!</div>
+      <div class="error-copy">
+        <p class="error-kicker">Caricamento non completato</p>
+        <h2>Non è stato possibile preparare l’area InAR</h2>
+        <p>La schermata sottostante è rimasta protetta. Controlla la connessione e prova nuovamente.</p>
+      </div>
+      <a class="retry-button" href="${curtainRetryUrl}">Riprova</a>
+      <p class="error-help">Se il problema continua, chiudi e riapri InAR AI.</p>`
+    : `<div class="loader-line">
+        <div style="display:flex;align-items:center;gap:11px;">
+          <div class="spinner"></div>
+          <p class="loader-title">Preparazione della chat aziendale</p>
+        </div>
+        <div class="loader-percent" id="percent">68%</div>
+      </div>
+      <div class="progress"></div>
+      <div class="message-box">
+        <p id="message">${escapeHtml(client.steps[0])}</p>
+      </div>`;
 
   return `<!doctype html>
 <html lang="it">
@@ -843,6 +906,84 @@ function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
       transform: translateY(4px);
     }
 
+    .error-symbol {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      justify-self: center;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      background: var(--accent-soft);
+      color: #fff;
+      box-shadow: 0 0 34px var(--accent-soft);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .error-copy {
+      max-width: 520px;
+      justify-self: center;
+      text-align: center;
+    }
+
+    .error-kicker {
+      margin: 0 0 9px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .error-copy h2 {
+      margin: 0;
+      color: #f8f9ff;
+      font-size: 24px;
+      line-height: 1.18;
+    }
+
+    .error-copy p:last-child,
+    .error-help {
+      color: #aeb7c9;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .error-copy p:last-child {
+      margin: 12px 0 0;
+    }
+
+    .retry-button {
+      min-width: 148px;
+      min-height: 46px;
+      display: inline-grid;
+      place-items: center;
+      justify-self: center;
+      padding: 0 24px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), rgba(25, 195, 125, 0.9));
+      color: #fff;
+      box-shadow: 0 14px 34px var(--accent-soft);
+      font-size: 14px;
+      font-weight: 850;
+      text-decoration: none;
+      transition: transform 150ms ease, filter 150ms ease;
+    }
+
+    .retry-button:hover,
+    .retry-button:focus-visible {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .error-help {
+      margin: -6px 0 0;
+      text-align: center;
+    }
+
     .bottom {
       display: grid;
       justify-items: center;
@@ -920,33 +1061,23 @@ function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
       </div>
       <div class="status-pill">
         <span class="status-dot"></span>
-        Ambiente riservato
+        ${isError ? "Area protetta" : "Ambiente riservato"}
       </div>
     </section>
 
     <section class="center">
-      <div class="loader-line">
-        <div style="display:flex;align-items:center;gap:11px;">
-          <div class="spinner"></div>
-          <p class="loader-title">Preparazione della chat aziendale</p>
-        </div>
-        <div class="loader-percent" id="percent">68%</div>
-      </div>
-      <div class="progress"></div>
-      <div class="message-box">
-        <p id="message">${escapeHtml(client.steps[0])}</p>
-      </div>
+      ${centerContent}
     </section>
 
     <section class="bottom">
       <div class="security">
         <span class="security-icon">✓</span>
-        <span>Contesto cliente protetto e interfaccia in preparazione</span>
+        <span>${isError ? "La pagina sorgente non è stata mostrata" : "Contesto cliente protetto e interfaccia in preparazione"}</span>
       </div>
       <p class="brand-note">InAR AI</p>
     </section>
   </main>
-  <script>
+  ${isError ? "" : `<script>
     const steps = ${stepsJson};
     const message = document.getElementById("message");
     const percent = document.getElementById("percent");
@@ -963,7 +1094,7 @@ function createNativeCurtainHtml(demoKey = defaultNotebookKey) {
         message.classList.remove("is-changing");
       }, 180);
     }, 1050);
-  </script>
+  </script>`}
 </body>
 </html>`;
 }
