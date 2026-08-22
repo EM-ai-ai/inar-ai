@@ -4,6 +4,7 @@ const path = require("node:path");
 const { defaultNotebookKey, notebookByKey, notebooks } = require("./notebook-config");
 const { hasRequiredOverlay } = require("./overlay-guard");
 const { isSourceLocation } = require("./source-config");
+const { suppressSourcePromotions } = require("./source-promotion-guard");
 
 let pendingOverlayAttemptId = null;
 let confirmedOverlayAttemptId = null;
@@ -1982,6 +1983,7 @@ function createNode(tagName, options = {}, children = []) {
 }
 
 function keepOverlayMounted() {
+  suppressSourcePromotions(document);
   mountOverlay();
   updateSourceLayoutVars();
 
@@ -1991,6 +1993,7 @@ function keepOverlayMounted() {
   }
 
   const observer = new MutationObserver(() => {
+    suppressSourcePromotions(document);
     if (!document.getElementById("demo-ai-shell")) mountOverlay();
     scheduleSourceLayoutUpdate();
   });
@@ -2026,6 +2029,7 @@ if (document.readyState === "loading") {
 
 for (const delay of [500, 1500, 3000, 6000, 10000]) {
   window.setTimeout(() => {
+    suppressSourcePromotions(document);
     mountOverlay();
     updateSourceLayoutVars();
   }, delay);
