@@ -3,7 +3,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { defaultNotebookKey, notebookByKey, notebooks } = require("./notebook-config");
 const { hasRequiredOverlay } = require("./overlay-guard");
+const { findSourceAccount } = require("./source-account");
 const { isSourceLocation } = require("./source-config");
+const { acknowledgeSourceWelcome } = require("./source-onboarding-guard");
 const { suppressSourcePromotions } = require("./source-promotion-guard");
 
 let pendingOverlayAttemptId = null;
@@ -506,6 +508,55 @@ const css = `
   .demo-notebook-section {
     display: grid;
     gap: 10px;
+  }
+
+  .demo-account-card {
+    position: relative;
+    margin-top: auto;
+    min-height: 72px;
+    border: 1px solid rgba(120, 153, 224, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    overflow: hidden;
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(79, 141, 255, 0.15), transparent 52%),
+      linear-gradient(145deg, rgba(20, 24, 34, 0.94), rgba(8, 10, 15, 0.96));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.045),
+      0 16px 38px rgba(0, 0, 0, 0.3);
+  }
+
+  .demo-account-label {
+    color: #72809b;
+    font-size: 9px;
+    font-weight: 780;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .demo-account-name,
+  .demo-account-email {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .demo-account-name {
+    color: #eef2fb;
+    font-size: 12px;
+    font-weight: 740;
+    line-height: 1.3;
+  }
+
+  .demo-account-email {
+    color: #8f98aa;
+    font-size: 10px;
+    line-height: 1.35;
   }
 
   .demo-notebook-heading {
@@ -1589,7 +1640,8 @@ function createSidebar() {
   if (activeView === "Chat") {
     return createNode("div", { className: "demo-sidebar" }, [
       brand,
-      createNotebookSwitcher(activeClient)
+      createNotebookSwitcher(activeClient),
+      createAccountCard()
     ]);
   }
 
@@ -1858,6 +1910,28 @@ function getActiveView() {
   return sessionStorage.getItem("demo-active-view") || "Chat";
 }
 
+function createAccountCard() {
+  return createNode("section", { id: "demo-account-card", className: "demo-account-card" }, [
+    createNode("span", { className: "demo-account-label", text: "Account" }),
+    createNode("strong", { id: "demo-account-name", className: "demo-account-name", text: "Account collegato" }),
+    createNode("span", { id: "demo-account-email", className: "demo-account-email", text: "" })
+  ]);
+}
+
+function updateAccountCard() {
+  const nameNode = document.getElementById("demo-account-name");
+  const emailNode = document.getElementById("demo-account-email");
+  if (!nameNode || !emailNode) return;
+
+  const account = findSourceAccount(document);
+  const name = account?.name || "Account collegato";
+  const email = account?.email || "";
+
+  if (nameNode.textContent !== name) nameNode.textContent = name;
+  if (emailNode.textContent !== email) emailNode.textContent = email;
+  if (emailNode.hidden !== !email) emailNode.hidden = !email;
+}
+
 function createNotebookSwitcher(activeClient) {
   return createNode("section", { className: "demo-notebook-section" }, [
     createNode("div", { className: "demo-notebook-heading" }, [
@@ -1982,8 +2056,14 @@ function createNode(tagName, options = {}, children = []) {
   return node;
 }
 
-function keepOverlayMounted() {
+function applySourceUiGuards() {
+  acknowledgeSourceWelcome(document);
   suppressSourcePromotions(document);
+  updateAccountCard();
+}
+
+function keepOverlayMounted() {
+  applySourceUiGuards();
   mountOverlay();
   updateSourceLayoutVars();
 
@@ -1993,8 +2073,9 @@ function keepOverlayMounted() {
   }
 
   const observer = new MutationObserver(() => {
-    suppressSourcePromotions(document);
+    applySourceUiGuards();
     if (!document.getElementById("demo-ai-shell")) mountOverlay();
+    updateAccountCard();
     scheduleSourceLayoutUpdate();
   });
 
@@ -2029,8 +2110,9 @@ if (document.readyState === "loading") {
 
 for (const delay of [500, 1500, 3000, 6000, 10000]) {
   window.setTimeout(() => {
-    suppressSourcePromotions(document);
+    applySourceUiGuards();
     mountOverlay();
+    updateAccountCard();
     updateSourceLayoutVars();
   }, delay);
 }
