@@ -324,10 +324,20 @@ function createWindow() {
   });
 
   win.webContents.on("before-input-event", async (event, input) => {
-    if (input.control && input.shift && input.key.toLowerCase() === "l" && input.type === "keyDown") {
+    const shortcutKey = String(input.key || "").toLowerCase();
+    if (input.control && input.shift && shortcutKey === "l" && input.type === "keyDown") {
       event.preventDefault();
       await session.fromPartition(sessionPartition).clearStorageData();
       loadDemoUrl(defaultNotebookKey);
+      return;
+    }
+
+    if (input.control && input.shift && shortcutKey === "u" && input.type === "keyDown") {
+      event.preventDefault();
+      updatePanelDismissed = true;
+      if (!win.webContents.isDestroyed()) {
+        win.webContents.send("demo-update-panel-dismissed");
+      }
     }
   });
 
@@ -390,17 +400,21 @@ function createWindow() {
 
   let pendingUpdateInfo = null;
   let downloadedUpdateInfo = null;
+  let updatePanelDismissed = false;
   let updateCheckMode = "manual";
+  const previewUpdatePanel = !app.isPackaged && process.argv.includes("--preview-update-panel");
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
 
   autoUpdater.on("update-available", (info) => {
+    if (pendingUpdateInfo?.version !== info.version) updatePanelDismissed = false;
     pendingUpdateInfo = info;
     if (!win.webContents.isDestroyed()) {
       win.webContents.send("demo-update-available", {
         currentVersion: app.getVersion(),
         latestVersion: info.version,
-        message: `Ultima versione: v${info.version}. Aggiornamento disponibile.`
+        message: `Ultima versione: v${info.version}. Aggiornamento disponibile.`,
+        panelDismissed: updatePanelDismissed
       });
     }
     if (updateCheckMode !== "silent") {
@@ -430,6 +444,7 @@ function createWindow() {
 
   autoUpdater.on("update-downloaded", (info) => {
     downloadedUpdateInfo = info;
+    updatePanelDismissed = false;
     if (!win.webContents.isDestroyed()) {
       win.webContents.send("demo-update-downloaded", { version: info.version });
     }
@@ -527,6 +542,28 @@ function createWindow() {
   ipcMain.handle("demo-get-app-version", (event) => {
     if (event.sender !== win.webContents) return "";
     return app.getVersion();
+  });
+
+  ipcMain.handle("demo-get-update-state", (event) => {
+    if (event.sender !== win.webContents) return null;
+
+    if (previewUpdatePanel) {
+      return {
+        currentVersion: app.getVersion(),
+        latestVersion: "0.1.15",
+        updateAvailable: true,
+        downloaded: false,
+        panelDismissed: updatePanelDismissed
+      };
+    }
+
+    return {
+      currentVersion: app.getVersion(),
+      latestVersion: downloadedUpdateInfo?.version || pendingUpdateInfo?.version || "",
+      updateAvailable: Boolean(pendingUpdateInfo || downloadedUpdateInfo),
+      downloaded: Boolean(downloadedUpdateInfo),
+      panelDismissed: updatePanelDismissed
+    };
   });
 
   loadDemoUrl(defaultNotebookKey);

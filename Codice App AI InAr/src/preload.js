@@ -7,6 +7,11 @@ const { findSourceAccount } = require("./source-account");
 const { isSourceLocation } = require("./source-config");
 const { acknowledgeSourceWelcome } = require("./source-onboarding-guard");
 const { suppressSourcePromotions } = require("./source-promotion-guard");
+const {
+  clampPercent,
+  getRequiredUpdatePanelContent,
+  shouldShowRequiredUpdatePanel
+} = require("./update-panel-state");
 
 let pendingOverlayAttemptId = null;
 let confirmedOverlayAttemptId = null;
@@ -508,6 +513,163 @@ const css = `
   .demo-notebook-section {
     display: grid;
     gap: 10px;
+  }
+
+  #demo-required-update-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 12;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    pointer-events: auto;
+    background:
+      radial-gradient(circle at 50% 38%, rgba(47, 123, 255, 0.22), transparent 34%),
+      rgba(2, 3, 5, 0.9);
+    backdrop-filter: blur(18px);
+    color: var(--demo-text);
+  }
+
+  .demo-required-update-card {
+    position: relative;
+    width: min(480px, calc(100vw - 56px));
+    border: 1px solid rgba(121, 159, 255, 0.28);
+    border-radius: 20px;
+    padding: 30px;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(79, 141, 255, 0.2), transparent 44%),
+      linear-gradient(145deg, rgba(20, 24, 34, 0.985), rgba(7, 9, 14, 0.99));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 34px 90px rgba(0, 0, 0, 0.58),
+      0 0 70px rgba(47, 123, 255, 0.11);
+  }
+
+  .demo-required-update-accent {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(113, 155, 255, 0.34);
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    color: #dce8ff;
+    background: linear-gradient(145deg, rgba(57, 117, 255, 0.34), rgba(25, 43, 84, 0.42));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 14px 34px rgba(15, 48, 113, 0.34);
+    font-size: 20px;
+    font-weight: 820;
+  }
+
+  .demo-required-update-accent.is-spinning {
+    color: transparent;
+  }
+
+  .demo-required-update-accent.is-spinning::after {
+    content: "";
+    width: 19px;
+    height: 19px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #dce8ff;
+    border-radius: 50%;
+    animation: demo-spin 0.8s linear infinite;
+  }
+
+  .demo-required-update-eyebrow {
+    margin-bottom: 8px;
+    color: #789cf0;
+    font-size: 10px;
+    font-weight: 820;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .demo-required-update-title {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 820;
+    line-height: 1.18;
+  }
+
+  .demo-required-update-message {
+    margin: 12px 0 0;
+    color: #afb6c5;
+    font-size: 13px;
+    line-height: 1.58;
+  }
+
+  .demo-required-update-versions {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #6f7788;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demo-required-update-version {
+    min-width: 76px;
+    height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    color: #aab2c2;
+    background: rgba(255, 255, 255, 0.04);
+    font-weight: 720;
+  }
+
+  .demo-required-update-version.is-latest {
+    border-color: rgba(99, 145, 255, 0.36);
+    color: #e5edff;
+    background: rgba(47, 123, 255, 0.14);
+  }
+
+  .demo-required-update-progress {
+    height: 4px;
+    margin-top: 22px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.075);
+  }
+
+  .demo-required-update-progress span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #4f8dff, #78a6ff);
+    box-shadow: 0 0 18px rgba(79, 141, 255, 0.6);
+    transition: width 220ms ease;
+  }
+
+  .demo-required-update-action {
+    width: 100%;
+    height: 46px;
+    margin-top: 24px;
+    border: 1px solid rgba(123, 161, 255, 0.5);
+    border-radius: 11px;
+    color: #fff;
+    background: linear-gradient(135deg, #356fe8, #2858bd);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 14px 34px rgba(30, 79, 181, 0.3);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 790;
+    transition: transform 160ms ease, filter 160ms ease;
+  }
+
+  .demo-required-update-action:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+  }
+
+  .demo-required-update-action:disabled {
+    cursor: default;
+    opacity: 0.72;
   }
 
   .demo-account-card {
@@ -1483,25 +1645,50 @@ function createUpdateButton() {
 
   const state = {
     mode: "check",
-    latestVersion: ""
+    currentVersion: "",
+    latestVersion: "",
+    panelDismissed: false
   };
 
-  const setUpdateAvailable = (version, message, showOverlay = false) => {
+  const showRequiredPanel = (mode, message = "", progress = {}) => {
+    if (state.panelDismissed) return;
+    showRequiredUpdatePanel({
+      mode,
+      currentVersion: state.currentVersion,
+      latestVersion: state.latestVersion,
+      message,
+      percent: progress.percent,
+      total: progress.total,
+      onPrimary: () => button.click()
+    });
+  };
+
+  const setUpdateAvailable = (version, message = "", showPanel = true) => {
     state.mode = "download";
     state.latestVersion = version || state.latestVersion;
     button.textContent = `Aggiorna a v${state.latestVersion}`;
     button.disabled = false;
-    if (showOverlay) {
-      showUpdateOverlay(message || `Ultima versione: v${state.latestVersion}. Premi Aggiorna per scaricarla.`, 7000);
-    }
+    if (showPanel) showRequiredPanel("available", message);
   };
 
   button.addEventListener("click", async () => {
+    const attemptedMode = state.mode;
+
     if (state.mode === "install") {
       button.disabled = true;
       button.textContent = "Riavvio...";
-      showUpdateOverlay("Riavvio e installazione aggiornamento...", 10000);
-      await ipcRenderer.invoke("demo-install-update");
+      state.panelDismissed = false;
+      showRequiredPanel("installing");
+      try {
+        const result = await ipcRenderer.invoke("demo-install-update");
+        if (result?.ok) return;
+
+        throw new Error(result?.message || "Installazione aggiornamento non riuscita.");
+      } catch (error) {
+        button.disabled = false;
+        button.textContent = "Riavvia e installa";
+        showRequiredPanel("error", error?.message || "Installazione aggiornamento non riuscita.");
+      }
       return;
     }
 
@@ -1510,7 +1697,8 @@ function createUpdateButton() {
 
       if (state.mode === "download") {
         button.textContent = "Download 0%";
-        showUpdateOverlay(`Download aggiornamento v${state.latestVersion} in corso...`, 10000);
+        state.panelDismissed = false;
+        showRequiredPanel("downloading", "", { percent: 0 });
         const result = await ipcRenderer.invoke("demo-download-update");
         if (!result?.ok) {
           throw new Error(result?.message || "Download aggiornamento non riuscito.");
@@ -1519,6 +1707,7 @@ function createUpdateButton() {
         if (result.updateAvailable === false) {
           state.mode = "check";
           button.textContent = "Verifica aggiornamenti";
+          hideRequiredUpdatePanel();
           showUpdateOverlay(result.message, 2600);
           button.disabled = false;
         }
@@ -1534,7 +1723,8 @@ function createUpdateButton() {
 
       state.latestVersion = result.latestVersion || "";
       if (result.updateAvailable) {
-        setUpdateAvailable(state.latestVersion, `Ultima versione: v${state.latestVersion}. Premi Aggiorna per scaricarla.`, true);
+        state.panelDismissed = false;
+        setUpdateAvailable(state.latestVersion);
       } else {
         state.mode = "check";
         button.textContent = "Verifica aggiornamenti";
@@ -1542,41 +1732,142 @@ function createUpdateButton() {
       }
       button.disabled = false;
     } catch (error) {
-      state.mode = "check";
-      button.textContent = "Verifica aggiornamenti";
       button.disabled = false;
-      showUpdateOverlay(error?.message || "Controllo aggiornamenti non riuscito.", 3000);
+      if (attemptedMode === "download") {
+        state.mode = "download";
+        button.textContent = `Aggiorna a v${state.latestVersion}`;
+        state.panelDismissed = false;
+        showRequiredPanel("error", error?.message || "Download aggiornamento non riuscito.");
+      } else {
+        state.mode = "check";
+        button.textContent = "Verifica aggiornamenti";
+        showUpdateOverlay(error?.message || "Controllo aggiornamenti non riuscito.", 3000);
+      }
     }
   });
 
   ipcRenderer.on("demo-update-available", (event, update) => {
-    setUpdateAvailable(update?.latestVersion, update?.message, false);
+    state.currentVersion = update?.currentVersion || state.currentVersion;
+    state.panelDismissed = Boolean(update?.panelDismissed);
+    setUpdateAvailable(update?.latestVersion, "", !state.panelDismissed);
   });
 
   ipcRenderer.on("demo-update-progress", (event, progress) => {
-    const percent = Math.round(progress?.percent || 0);
+    const percent = clampPercent(progress?.percent);
     const total = formatMegabytes(progress?.total || 0);
     button.textContent = `Download ${percent}%`;
-    showUpdateOverlay(
-      total ? `Download aggiornamento: ${percent}% di ${total}.` : `Download aggiornamento: ${percent}%.`,
-      2200
-    );
+    showRequiredPanel("downloading", "", { percent, total });
   });
 
   ipcRenderer.on("demo-update-downloaded", (event, update) => {
     state.mode = "install";
     state.latestVersion = update?.version || state.latestVersion;
+    state.panelDismissed = false;
     button.textContent = "Riavvia e installa";
     button.disabled = false;
-    showUpdateOverlay(`Aggiornamento v${state.latestVersion} pronto. Premi Riavvia e installa.`, 9000);
+    showRequiredPanel("install");
   });
 
+  ipcRenderer.on("demo-update-panel-dismissed", () => {
+    state.panelDismissed = true;
+    hideRequiredUpdatePanel();
+  });
+
+  ipcRenderer.invoke("demo-get-update-state")
+    .then((update) => {
+      if (!update) return;
+      state.currentVersion = update.currentVersion || state.currentVersion;
+      state.latestVersion = update.latestVersion || state.latestVersion;
+      state.panelDismissed = Boolean(update.panelDismissed);
+
+      if (update.downloaded) {
+        state.mode = "install";
+        button.textContent = "Riavvia e installa";
+        if (shouldShowRequiredUpdatePanel(update)) showRequiredPanel("install");
+        return;
+      }
+
+      if (update.updateAvailable) {
+        setUpdateAvailable(state.latestVersion, "", shouldShowRequiredUpdatePanel(update));
+      }
+    })
+    .catch(() => {});
+
   return button;
+}
+
+function showRequiredUpdatePanel(options) {
+  const shell = document.getElementById("demo-ai-shell");
+  if (!shell) return;
+
+  hideUpdateOverlay();
+  const content = getRequiredUpdatePanelContent(options);
+  let panel = document.getElementById("demo-required-update-panel");
+
+  if (!panel) {
+    panel = createNode("section", { id: "demo-required-update-panel" }, [
+      createNode("div", { className: "demo-required-update-card" }, [
+        createNode("div", { className: "demo-required-update-accent", text: "↑" }),
+        createNode("div", { className: "demo-required-update-eyebrow" }),
+        createNode("h2", { className: "demo-required-update-title" }),
+        createNode("p", { className: "demo-required-update-message" }),
+        createNode("div", { className: "demo-required-update-versions" }, [
+          createNode("span", { className: "demo-required-update-version is-current" }),
+          createNode("span", { text: "→" }),
+          createNode("span", { className: "demo-required-update-version is-latest" })
+        ]),
+        createNode("div", { className: "demo-required-update-progress" }, [createNode("span")]),
+        createNode("button", { className: "demo-required-update-action" })
+      ])
+    ]);
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-modal", "true");
+    panel.setAttribute("aria-label", "Aggiornamento richiesto");
+    shell.appendChild(panel);
+  }
+
+  const accent = panel.querySelector(".demo-required-update-accent");
+  const eyebrow = panel.querySelector(".demo-required-update-eyebrow");
+  const title = panel.querySelector(".demo-required-update-title");
+  const message = panel.querySelector(".demo-required-update-message");
+  const versions = panel.querySelector(".demo-required-update-versions");
+  const currentVersion = panel.querySelector(".demo-required-update-version.is-current");
+  const latestVersion = panel.querySelector(".demo-required-update-version.is-latest");
+  const progress = panel.querySelector(".demo-required-update-progress");
+  const progressBar = progress?.querySelector("span");
+  const action = panel.querySelector(".demo-required-update-action");
+
+  accent.textContent = content.showSpinner ? "" : "↑";
+  accent.classList.toggle("is-spinning", content.showSpinner);
+  eyebrow.textContent = content.eyebrow;
+  title.textContent = content.title;
+  message.textContent = content.message;
+  versions.hidden = !(content.currentVersion && content.latestVersion);
+  currentVersion.textContent = content.currentVersion ? `v${content.currentVersion}` : "";
+  latestVersion.textContent = content.latestVersion ? `v${content.latestVersion}` : "";
+  progress.hidden = content.progress === null;
+  if (progressBar) progressBar.style.width = `${content.progress ?? 0}%`;
+  action.textContent = content.actionLabel;
+  action.type = "button";
+  action.disabled = content.actionDisabled;
+  action.onclick = content.actionDisabled ? null : () => options.onPrimary?.();
+}
+
+function hideRequiredUpdatePanel() {
+  document.getElementById("demo-required-update-panel")?.remove();
 }
 
 function formatMegabytes(bytes) {
   if (!bytes) return "";
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function hideUpdateOverlay() {
+  window.clearTimeout(showUpdateOverlay.timeoutId);
+  sessionStorage.removeItem("demo-update-overlay-until");
+  sessionStorage.removeItem("demo-update-overlay-message");
+  sessionStorage.removeItem("demo-update-overlay-variant");
+  document.getElementById("demo-update-overlay")?.remove();
 }
 
 function showUpdateOverlay(message, holdMs = 6000, shell = document.getElementById("demo-ai-shell"), variant = "full") {
@@ -1605,10 +1896,7 @@ function showUpdateOverlay(message, holdMs = 6000, shell = document.getElementBy
   window.clearTimeout(showUpdateOverlay.timeoutId);
   showUpdateOverlay.timeoutId = window.setTimeout(() => {
     if (Number(sessionStorage.getItem("demo-update-overlay-until") || 0) <= Date.now()) {
-      sessionStorage.removeItem("demo-update-overlay-until");
-      sessionStorage.removeItem("demo-update-overlay-message");
-      sessionStorage.removeItem("demo-update-overlay-variant");
-      overlay.remove();
+      hideUpdateOverlay();
     }
   }, holdMs);
 }
