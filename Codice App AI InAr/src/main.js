@@ -550,7 +550,7 @@ function createWindow() {
     if (previewUpdatePanel) {
       return {
         currentVersion: app.getVersion(),
-        latestVersion: "0.1.15",
+        latestVersion: "0.1.16",
         updateAvailable: true,
         downloaded: false,
         panelDismissed: updatePanelDismissed
@@ -570,7 +570,7 @@ function createWindow() {
 
   setTimeout(() => {
     checkForUpdates({ silent: true }).catch(() => {});
-  }, 4500);
+  }, 800);
 
   async function checkForUpdates({ silent }) {
     if (!app.isPackaged) {

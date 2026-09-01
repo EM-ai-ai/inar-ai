@@ -4,7 +4,7 @@ Applicazione desktop e portale di distribuzione riservati a InAR, versione **v0.
 
 - Sito protetto: [inar-ai.vercel.app](https://inar-ai.vercel.app)
 - Repository: [EM-ai-ai/inar-ai](https://github.com/EM-ai-ai/inar-ai)
-- Release: [v0.1.14](https://github.com/EM-ai-ai/inar-ai/releases/tag/v0.1.14)
+- Release: [v0.1.15](https://github.com/EM-ai-ai/inar-ai/releases/tag/v0.1.15)
 
 All'apertura l'app mostra il loader personalizzato InAR e carica `InAR - Progetti`. La sidebar permette di passare rapidamente anche a `InAR AI - DIP` e `InAR - Gare`, mantenendo la stessa sessione protetta e il sistema di mascheramento. Nel footer mostra nome ed email dell'account in uso senza salvare o trasmettere questi dati.
 
