@@ -33,7 +33,7 @@ const css = `
     --demo-chat-right: calc(var(--demo-chat-left) + var(--demo-chat-width));
     --demo-chat-top: 64px;
     --demo-chat-header-height: 49px;
-    --demo-content-top: calc(var(--demo-chat-top) + var(--demo-chat-header-height));
+    --demo-hero-height: clamp(180px, 30vh, 248px);
     --demo-chat-bottom-cover: 24px;
     --demo-bg: #020305;
     --demo-panel: #0a0b0f;
@@ -886,12 +886,24 @@ const css = `
     color: transparent;
   }
 
+  /* Reserve the banner's space in the source flex layout so the conversation's
+     own scroll viewport starts below it, including the first message. */
+  section.chat-panel .panel-header {
+    box-sizing: border-box !important;
+    flex: 0 0 var(--demo-hero-height) !important;
+    height: var(--demo-hero-height) !important;
+    min-height: var(--demo-hero-height) !important;
+    max-height: var(--demo-hero-height) !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
   #demo-card-mask {
     position: fixed;
-    top: var(--demo-content-top);
+    top: var(--demo-chat-top);
     left: calc(var(--demo-chat-left) + var(--demo-left-cover-extra));
     width: calc(var(--demo-chat-width) - var(--demo-left-cover-extra));
-    height: 248px;
+    height: var(--demo-hero-height);
     background: #202428;
     pointer-events: auto;
     padding: 0;
@@ -900,7 +912,7 @@ const css = `
   .demo-hero-card {
     position: relative;
     height: 100%;
-    border-radius: 8px;
+    border-radius: 0 0 8px 8px;
     overflow: hidden;
     display: block;
     background:
